@@ -14,7 +14,9 @@ func NewCancelDispatcher(w *worker.RetryWorker) *CancelDispatcher {
 }
 
 func (d *CancelDispatcher) Dispatch(ctx context.Context, call func() error) {
-	d.worker.Start(context.Background(), call)
+	// 把请求 ctx 透传给 worker：请求结束（ctx 取消）后重试必须停下，
+	// 不能再用 context.Background() 让它无限重试下去。
+	d.worker.Start(ctx, call)
 	<-ctx.Done()
 }
 
